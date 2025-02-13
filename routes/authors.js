@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const joi = require("joi");
-let authors = [
-  { id: 1, firstName: "abbass", lastName: "daher", nationality: "lebanon" },
-];
+
+const { Author } = require("../model/Author");
 
 /**
  * @desc get all authors
@@ -11,8 +10,16 @@ let authors = [
  * @method GET
  * @access public
  */
-router.get("/", (req, res) => {
-  res.status(200).json(authors);
+router.get("/", async (req, res) => {
+  try {
+    const authorList = await Author.find()
+      .sort({ firstName: 1 })
+      .select("firstName lastName -_id");
+    res.status(200).json(authorList);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 /**
@@ -21,34 +28,45 @@ router.get("/", (req, res) => {
  * @method GET
  * @access public
  */
-router.get("/:id", (req, res) => {
-  const author = authors.find((a) => a.id == parseInt(req.params.id));
-  if (!author) {
-    return res.status(404).json({ message: "Author not found" });
-  } else {
-    res.status(200).json(author);
+router.get("/:id", async (req, res) => {
+  try {
+    const author = await Author.findById(req.params.id);
+    if (!author) {
+      return res.status(404).json({ message: "Author not found" });
+    } else {
+      res.status(200).json(author);
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 /**
  * @desc add authors
- * @route /api/authors
+ * @route /api/author
  * @method POST
  * @access public
  */
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   const { error } = validationAddAuthor(req.body);
-  const newAuthor = {
-    id: authors.length + 1,
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    nationality: req.body.nationality,
-  };
   if (error) {
     return res.status(400).send(error.details[0].message);
-  } else {
-    authors.push(newAuthor);
-    res.status(201).json(newAuthor);
+  }
+  try {
+    const author = new Author({
+      // id: authors.length + 1,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      nationality: req.body.nationality,
+      image: req.body.image,
+    });
+
+    const result = await author.save();
+    res.status(201).json(result);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 

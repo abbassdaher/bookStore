@@ -4,9 +4,9 @@ const authorsPath = require("./routes/authors");
 const mongoose = require("mongoose");
 
 // connection with mongoDB
-mongoose.connect("mongodb://localhost/bookStoreDB").then(() => {
+ mongoose.connect('mongodb://localhost/bookStoreDB').then(() => {
   console.log("connected to MongoDB");
-}).catch(() => {console.log("connection faild to mongoDB");
+}).catch((err) => {console.log("connection faild to mongoDB",err);
 
   
 }
@@ -20,7 +20,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/books", booksPath);
-app.use("/api/author", authorsPath);
+app.use("/api/authors", authorsPath);
 
 // Start the server
 const PORT = 5000;
