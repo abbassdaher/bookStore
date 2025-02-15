@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
   try {
     const authorList = await Author.find()
       .sort({ firstName: 1 })
-      .select("firstName lastName -_id");
+      .select("firstName lastName ");
     res.status(200).json(authorList);
   } catch (error) {
     console.log(error);
@@ -77,19 +77,29 @@ router.post("/", async (req, res) => {
  * @access public
  */
 
-router.put("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
   const { error } = validateUpdateAuthor(req.body);
   if (error) {
     return res.status(400).send(error.details[0].message);
   }
-  const author = authors.find((a) => a.id == parseInt(req.params.id));
-  if (!author) {
-    return res.status(404).json({ message: "Author not found" });
-  } else {
-    author.firstName = req.body.firstName;
-    author.lastName = req.body.lastName;
-    author.nationality = req.body.nationality;
-    res.status(200).json({ message: "Author updated successfully" });
+
+  try {
+    const author = await Author.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
+          nationality: req.body.nationality,
+          image: req.body.image,
+        },
+      },
+      { new: true }
+    );
+    res.status(200).json(author);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
