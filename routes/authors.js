@@ -1,8 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const joi = require("joi");
+const asyncHandler = require("express-async-handler");
 
-const { Author } = require("../model/Author");
+const {
+  Author,
+  validateUpdateAuthor,
+  validationAddAuthor,
+} = require("../model/Author");
 
 /**
  * @desc get all authors
@@ -10,17 +14,16 @@ const { Author } = require("../model/Author");
  * @method GET
  * @access public
  */
-router.get("/", async (req, res) => {
-  try {
+router.get(
+  "/",
+  asyncHandler(async (req, res) => {
     const authorList = await Author.find()
       .sort({ firstName: 1 })
       .select("firstName lastName ");
     res.status(200).json(authorList);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+    
+  })
+);
 
 /**
  * @desc get authors by id
@@ -28,19 +31,18 @@ router.get("/", async (req, res) => {
  * @method GET
  * @access public
  */
-router.get("/:id", async (req, res) => {
-  try {
+router.get(
+  "/:id",
+  asyncHandler(async (req, res) => {
     const author = await Author.findById(req.params.id);
     if (!author) {
       return res.status(404).json({ message: "Author not found" });
     } else {
       res.status(200).json(author);
     }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+    
+  })
+);
 
 /**
  * @desc add authors
@@ -48,12 +50,9 @@ router.get("/:id", async (req, res) => {
  * @method POST
  * @access public
  */
-router.post("/", async (req, res) => {
-  const { error } = validationAddAuthor(req.body);
-  if (error) {
-    return res.status(400).send(error.details[0].message);
-  }
-  try {
+router.post(
+  "/",
+  asyncHandler(async (req, res) => {
     const author = new Author({
       // id: authors.length + 1,
       firstName: req.body.firstName,
@@ -64,11 +63,8 @@ router.post("/", async (req, res) => {
 
     const result = await author.save();
     res.status(201).json(result);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+  })
+);
 
 /**
  * @desc update authors by id
@@ -77,13 +73,14 @@ router.post("/", async (req, res) => {
  * @access public
  */
 
-router.put("/:id", async (req, res) => {
-  const { error } = validateUpdateAuthor(req.body);
-  if (error) {
-    return res.status(400).send(error.details[0].message);
-  }
+router.put(
+  "/:id",
+  asyncHandler(async (req, res) => {
+    const { error } = validateUpdateAuthor(req.body);
+    if (error) {
+      return res.status(400).send(error.details[0].message);
+    }
 
-  try {
     const author = await Author.findByIdAndUpdate(
       req.params.id,
       {
@@ -97,11 +94,8 @@ router.put("/:id", async (req, res) => {
       { new: true }
     );
     res.status(200).json(author);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+  })
+);
 
 /**
  * @desc delete authors by id
@@ -109,34 +103,19 @@ router.put("/:id", async (req, res) => {
  * @method DELETE
  * @access public
  */
-router.delete("/:id", (req, res) => {
-  const author = authors.find((a) => a.id == parseInt(req.params.id));
-  if (!author) {
-    return res.status(404).json({ message: "Author not found" });
-  }
-  const index = authors.indexOf(author);
-  authors.splice(index, 1);
-  return res.status(200).json({ message: "author deleted successfully" });
-});
-
-// validation add nrew author
-function validationAddAuthor(obj) {
-  const schema = joi.object({
-    firstName: joi.string().min(4).max(30).required(),
-    lastName: joi.string().min(4).max(30).required(),
-    nationality: joi.string().min(4).max(30).required(),
-  });
-  return schema.validate();
-}
-
-// validation update author
-function validateUpdateAuthor(obj) {
-  const schema = joi.object({
-    firstName: joi.string().min(4).max(30),
-    lastName: joi.string().min(4).max(30),
-    nationality: joi.string().min(4).max(30),
-  });
-  return schema.validate();
-}
+router.delete(
+  "/:id",
+  asyncHandler(async (req, res) => {
+    // const author = authors.find((a) => a.id == parseInt(req.params.id));
+    const author = await Author.findById(req.params.id);
+    if (!author) {
+      return res.status(404).json({ message: "Author not found" });
+    }
+    await Author.findByIdAndDelete(req.params.id);
+    // const index = authors.indexOf(author);
+    // authors.splice(index, 1);
+    return res.status(200).json({ message: "author deleted successfully" });
+  })
+);
 
 module.exports = router;
