@@ -2,28 +2,40 @@ const express = require("express");
 const booksPath = require("./routes/books");
 const authorsPath = require("./routes/authors");
 const mongoose = require("mongoose");
+const logger = require("./middelwares/logger");
+const { notFound, errorHandler } = require("./middelwares/error");
+const dotENV = require("dotenv");
+dotENV.config();
 
 // connection with mongoDB
- mongoose.connect('mongodb://localhost/bookStoreDB').then(() => {
-  console.log("connected to MongoDB");
-}).catch((err) => {console.log("connection faild to mongoDB",err);
-
-  
-}
-)
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("connected to MongoDB");
+  })
+  .catch((err) => {
+    console.log("connection faild to mongoDB", err);
+  });
 
 // app init
 const app = express();
 
 // apply middlewares
 app.use(express.json());
+app.use(logger);
 
 // Routes
 app.use("/api/books", booksPath);
 app.use("/api/authors", authorsPath);
 
+// Error not found
+app.use(notFound);
+
+// Error handler Middleware
+app.use(errorHandler);
+
 // Start the server
-const PORT = 5000;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running in ${process.env.NODE_ENV} on port ${PORT}`);
 });
