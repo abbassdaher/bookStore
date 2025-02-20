@@ -52,7 +52,9 @@ const {
 router.get(
   "/",
   asyncHandler(async (req, res) => {
-    const book = await await Book.find().select("title").populate("author",["_id","firstName"]);
+    const book = await await Book.find()
+      .select("title")
+      .populate("author", ["_id", "firstName"]);
     res.status(200).json(book);
   })
 );
@@ -83,9 +85,9 @@ router.get(
  */
 router.post(
   "/",
-  asyncHandler(async(req, res) => {
-    const {error} = validationCreateBook(req.body)
-    if(error){
+  asyncHandler(async (req, res) => {
+    const { error } = validationCreateBook(req.body);
+    if (error) {
       return res.status(400).json({ message: error.details[0].message });
     }
     const book = new Book({
@@ -145,7 +147,7 @@ router.delete(
     if (!book) {
       return res.status(404).json({ message: "Book not found" });
     } else {
-        await Book.findByIdAndDelete(req.params.id)
+      await Book.findByIdAndDelete(req.params.id);
       return res.status(200).json({ message: "book deleted successfully" });
     }
   })
