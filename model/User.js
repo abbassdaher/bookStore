@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       minlength: 5,
-      maxlength: 25,
+      maxlength: 255,
     },
     email: {
       type: String,
@@ -37,12 +37,12 @@ function validationRegistrationUser(obj) {
   const schema = joi.object({
     username: joi.string().trim().min(5).max(25).required(),
     email: joi.string().trim().min(5).max(255).required(),
-    password: joi.string().trim().min(5).max(25).required(),
+    password: joi.string().trim().min(5).max(255).required(),
     isAdmin: joi.boolean(),
   });
 }
 
-function validationUpdateUser(object) {
+function validationUpdateRegistrationUser(object) {
   const schema = joi.object({
     username: joi.string().trim().min(5).max(25),
     password: joi.string().trim().min(5).max(25),
@@ -51,4 +51,18 @@ function validationUpdateUser(object) {
   });
 }
 
-module.exports = { User, validationRegistrationUser, validationUpdateUser };
+function validationLoginUser(object) {
+  const schema = joi.object({
+    // username: joi.string().trim().min(5).max(25),
+    password: joi.string().trim().min(5).max(25),
+    email: joi.string().trim().min(5).max(255),
+    // isAdmin: joi.boolean(),
+  });
+}
+
+module.exports = {
+  User,
+  validationRegistrationUser,
+  validationUpdateRegistrationUser,
+  validationLoginUser
+};

@@ -2,6 +2,7 @@ const express = require("express");
 const booksPath = require("./routes/books");
 const authorsPath = require("./routes/authors");
 const userPath = require("./routes/user");
+const authPath = require("./routes/auth");
 const mongoose = require("mongoose");
 const logger = require("./middelwares/logger");
 const { notFound, errorHandler } = require("./middelwares/error");
@@ -29,6 +30,7 @@ app.use(logger);
 app.use("/api/books", booksPath);
 app.use("/api/authors", authorsPath);
 app.use("/api/users", userPath);
+app.use("/api/auths", authPath);
 
 // Error not found
 app.use(notFound);
